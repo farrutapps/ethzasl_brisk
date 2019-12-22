@@ -196,7 +196,7 @@ class BriskDescriptorExtractor {
   unsigned int noShortPairs_;
   // Number of longParis.
   unsigned int noLongPairs_;
-
+  float *mapping;
   // General size.
   static const float basicSize_;
 };
