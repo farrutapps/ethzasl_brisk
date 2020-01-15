@@ -415,7 +415,6 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
               << std::endl;
   }
   const float xf = briskPoint.x + key_x;
-  std::cout << xf << std::endl;
   const float yf = briskPoint.y + key_y;
   const int x = static_cast<int>(xf);
   const int y = static_cast<int>(yf);
