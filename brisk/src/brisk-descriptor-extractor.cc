@@ -187,13 +187,14 @@ void BriskDescriptorExtractor::InitFromStream(bool rotationInvariant,
                                               float patternScale) {
   // Not in use.
   // to read matrix!!
-  cv::FileStorage opencv_file_x("/home/mathur/map1.ext", cv::FileStorage::READ);
-  cv::FileStorage opencv_file_y("/home/mathur/map2.ext", cv::FileStorage::READ);
+  cv::FileStorage opencv_file_x("/home/mathur/map1obicna.ext",
+                                cv::FileStorage::READ);
+  cv::FileStorage opencv_file_y("/home/mathur/map2obicna.ext",
+                                cv::FileStorage::READ);
   opencv_file_x["matName"] >> file_matrix_x_;
   opencv_file_y["matName"] >> file_matrix_y_;
   opencv_file_x.release();
   opencv_file_y.release();
-
   // this is being written in command line when i go maplab_node maplab_node
   // rovioli.launch
   // std::cout << "smth" << std::endl;
@@ -395,10 +396,12 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
   // Get the float position.
   const brisk::BriskPatternPoint &briskPoint =
       patternPoints_[scale * n_rot_ * points_ + rot * points_ + point];
+  std::cout << "WE ARE HERE - start of SmoothedInt" << std::endl;
   double close_fcn = 1000;
   double altered_key_x = 10000;
   double altered_key_y = 10000;
   // Finds location of keypoint in undistorted image.
+  std::cout << key_x << " " << key_y << std::endl;
   for (int i = 0; i < file_matrix_x_.rows; i++) {
     for (int j = 0; j < file_matrix_x_.cols; j++) {
       if (close_fcn > (pow((file_matrix_y_.at<float>(i, j) - key_y), 2) +
@@ -407,6 +410,7 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
         altered_key_x = j;
         close_fcn = pow((file_matrix_y_.at<float>(i, j) - key_y), 2) +
                     pow((file_matrix_x_.at<float>(i, j) - key_x), 2);
+
         if (close_fcn < 1) {
           break;
         }
@@ -425,10 +429,11 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
   // Newly created pattern point.
   const float xf = briskPoint.x + altered_key_x;
   const float yf = briskPoint.y + altered_key_y;
+
   // Finds pattern point possition in distorted image.
   close_fcn = 1000;
-  double loc_x = 100;
-  double loc_y = 100;
+  double loc_x = 10000;
+  double loc_y = 10000;
   for (int i = 0; i < file_matrix_x_.rows; i++) {
 
     for (int j = 0; j < file_matrix_x_.cols; j++) {
@@ -454,6 +459,10 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
   }
   const int x = static_cast<int>(loc_x);
   const int y = static_cast<int>(loc_y);
+  std::cout << " " << static_cast<int>(loc_x) << " "
+            << static_cast<int>(briskPoint.x + key_x) << std::endl;
+  std::cout << " " << static_cast<int>(loc_y) << " "
+            << static_cast<int>(briskPoint.y + key_y) << std::endl;
   // const float xf = briskPoint.x + key_x;
   // const float yf = briskPoint.y + key_y;
   // const int x = static_cast<int>(xf);
@@ -522,10 +531,13 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
 
   if (dx + dy > 2) {
     // Now the calculation:
+
     ImgPixel_T *ptr =
         reinterpret_cast<ImgPixel_T *>(image.data) + x_left + imagecols * y_top;
     // First the corners:
+
     ret_val = A * IntegralPixel_T(*ptr);
+    std::cout << "we get error here!" << std::endl;
     ptr += dx + 1;
     ret_val += B * IntegralPixel_T(*ptr);
     ptr += dy * imagecols + 1;
@@ -692,6 +704,7 @@ void BriskDescriptorExtractor::doDescriptorComputation(
     const agast::Mat &image, std::vector<agast::KeyPoint> &keypoints,
     DESCRIPTOR_CONTAINER &descriptors) const {
   // Remove keypoints very close to the border.
+  std::cout << "ovdesmo" << std::endl;
   size_t ksize = keypoints.size();
   std::vector<int> kscales; // Remember the scale per keypoint.
   kscales.resize(ksize);
