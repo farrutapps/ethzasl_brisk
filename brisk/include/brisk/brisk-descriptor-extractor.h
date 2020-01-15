@@ -196,7 +196,9 @@ class BriskDescriptorExtractor {
   unsigned int noShortPairs_;
   // Number of longParis.
   unsigned int noLongPairs_;
-  float *mapping;
+
+  cv::Mat file_matrix_x_;
+  cv::Mat file_matrix_y_;
   // General size.
   static const float basicSize_;
 };

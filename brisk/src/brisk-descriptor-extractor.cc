@@ -86,14 +86,12 @@ void BriskDescriptorExtractor::generateKernel(std::vector<float> &radiusList,
   static const float lb_scale_step = lb_scale / (scales_);
 
   scaleList_ = new float[scales_];
-  mapping = new float[scales_];
   sizeList_ = new unsigned int[scales_];
 
   const float sigma_scale = 1.3;
 
   for (unsigned int scale = 0; scale < scales_; ++scale) {
     scaleList_[scale] = pow((double)2.0, (double)(scale * lb_scale_step));
-    mapping[scale] = pow((double)2.0, (double)(scale * lb_scale_step));
     sizeList_[scale] = 0;
 
     // generate the pattern points look-up
@@ -188,6 +186,17 @@ void BriskDescriptorExtractor::InitFromStream(bool rotationInvariant,
                                               std::istream &pattern_stream,
                                               float patternScale) {
   // Not in use.
+  // to read matrix!!
+  cv::FileStorage opencv_file_x("/home/mathur/map1.ext", cv::FileStorage::READ);
+  cv::FileStorage opencv_file_y("/home/mathur/map2.ext", cv::FileStorage::READ);
+  opencv_file_x["matName"] >> file_matrix_x_;
+  opencv_file_y["matName"] >> file_matrix_y_;
+  opencv_file_x.release();
+  opencv_file_y.release();
+
+  // this is being written in command line when i go maplab_node maplab_node
+  // rovioli.launch
+  // std::cout << "smth" << std::endl;
   dMax_ = 0;
   dMin_ = 0;
   rotationInvariance = rotationInvariant;
@@ -207,7 +216,6 @@ void BriskDescriptorExtractor::InitFromStream(bool rotationInvariant,
   static const float lb_scale_step = lb_scale / (scales_);
 
   scaleList_ = new float[scales_];
-  mapping = new float[scales_];
   sizeList_ = new unsigned int[scales_];
 
   const float sigma_scale = 1.3;
@@ -228,7 +236,6 @@ void BriskDescriptorExtractor::InitFromStream(bool rotationInvariant,
   // Now fill all the scaled and rotated versions.
   for (unsigned int scale = 0; scale < scales_; ++scale) {
     scaleList_[scale] = pow(2.0, static_cast<double>(scale * lb_scale_step));
-    mapping[scale] = pow(2.0, static_cast<double>(scale * lb_scale_step));
     sizeList_[scale] = 0;
 
     // Generate the pattern points look-up.
@@ -388,8 +395,27 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
   // Get the float position.
   const brisk::BriskPatternPoint &briskPoint =
       patternPoints_[scale * n_rot_ * points_ + rot * points_ + point];
+  double close_fcn = 1000;
+  double altered_key_x = 10000;
+  double altered_key_y = 10000;
 
+  for (int i = 0; i < file_matrix_x_.rows; i++) {
+    for (int j = 0; j < file_matrix_x_.cols; j++) {
+      if (close_fcn > (pow((file_matrix_y_.at<float>(i, j) - key_y), 2) +
+                       pow((file_matrix_x_.at<float>(i, j) - key_x), 2))) {
+        altered_key_y = i;
+        altered_key_x = j;
+        close_fcn = pow((file_matrix_y_.at<float>(i, j) - key_y), 2) +
+                    pow((file_matrix_x_.at<float>(i, j) - key_x), 2);
+      }
+    }
+  }
+  if (altered_key_x == 10000 || altered_key_y == 10000) {
+    std::cout << "one keypoint wasnt found!! in b-d-e.cc SmoothedIntensity"
+              << std::endl;
+  }
   const float xf = briskPoint.x + key_x;
+  std::cout << xf << std::endl;
   const float yf = briskPoint.y + key_y;
   const int x = static_cast<int>(xf);
   const int y = static_cast<int>(yf);
@@ -805,6 +831,5 @@ BriskDescriptorExtractor::~BriskDescriptorExtractor() {
   delete[] longPairs_;
   delete[] scaleList_;
   delete[] sizeList_;
-  delete[] mapping;
 }
 } // namespace brisk
