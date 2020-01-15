@@ -398,7 +398,7 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
   double close_fcn = 1000;
   double altered_key_x = 10000;
   double altered_key_y = 10000;
-
+  // Finds location of keypoint in undistorted image.
   for (int i = 0; i < file_matrix_x_.rows; i++) {
     for (int j = 0; j < file_matrix_x_.cols; j++) {
       if (close_fcn > (pow((file_matrix_y_.at<float>(i, j) - key_y), 2) +
@@ -407,17 +407,57 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
         altered_key_x = j;
         close_fcn = pow((file_matrix_y_.at<float>(i, j) - key_y), 2) +
                     pow((file_matrix_x_.at<float>(i, j) - key_x), 2);
+        if (close_fcn < 1) {
+          break;
+        }
       }
+    }
+    if (close_fcn < 1) {
+      break;
     }
   }
   if (altered_key_x == 10000 || altered_key_y == 10000) {
+    // checks if all keypoints are found in undist image. If not, increase
+    // close_fcn!
     std::cout << "one keypoint wasnt found!! in b-d-e.cc SmoothedIntensity"
               << std::endl;
   }
-  const float xf = briskPoint.x + key_x;
-  const float yf = briskPoint.y + key_y;
-  const int x = static_cast<int>(xf);
-  const int y = static_cast<int>(yf);
+  // Newly created pattern point.
+  const float xf = briskPoint.x + altered_key_x;
+  const float yf = briskPoint.y + altered_key_y;
+  // Finds pattern point possition in distorted image.
+  close_fcn = 1000;
+  double loc_x = 100;
+  double loc_y = 100;
+  for (int i = 0; i < file_matrix_x_.rows; i++) {
+
+    for (int j = 0; j < file_matrix_x_.cols; j++) {
+      if (close_fcn > (pow((i - yf), 2) + pow((j - xf), 2))) {
+        loc_y = file_matrix_y_.at<float>(i, j);
+        loc_x = file_matrix_x_.at<float>(i, j);
+        close_fcn = pow((i - yf), 2) + pow((j - xf), 2);
+        if (close_fcn < 1) {
+          break;
+        }
+      }
+    }
+    if (close_fcn < 1) {
+      break;
+    }
+  }
+  if (loc_x == 10000 || loc_y == 10000) {
+    // checks if all keypoints are found in undist image. If not, increase
+    // close_fcn!
+    std::cout
+        << "one pattern point was not found!! in b-d-e.cc SmoothedIntensity"
+        << std::endl;
+  }
+  const int x = static_cast<int>(loc_x);
+  const int y = static_cast<int>(loc_y);
+  // const float xf = briskPoint.x + key_x;
+  // const float yf = briskPoint.y + key_y;
+  // const int x = static_cast<int>(xf);
+  // const int y = static_cast<int>(yf);
   const int &imagecols = image.cols;
 
   // Get the sigma:
