@@ -191,10 +191,10 @@ void BriskDescriptorExtractor::InitFromStream(bool rotationInvariant,
   // scaleInvariant "
   //          << scaleInvariant << std::endl;
   cv::FileStorage opencv_file_x("/home/mathur/map1mh.ext",
-                                cv::FileStorage::READ);
+                                cv::FileStorage::READ); // map1mh
   cv::FileStorage opencv_file_y("/home/mathur/map2mh.ext",
                                 cv::FileStorage::READ);
-  cv::FileStorage opencv_file_x_y("/home/mathur/mapping_x_y_raw_to_und.ext",
+  cv::FileStorage opencv_file_x_y("/home/mathur/mapping_x_y_raw_to_und_mh.ext",
                                   cv::FileStorage::READ);
   opencv_file_x["matName"] >> file_matrix_x_;
   opencv_file_y["matName"] >> file_matrix_y_;
@@ -442,7 +442,7 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
   float yf = briskPoint.y + altered_key_y;*/
   double altered_key_x = 10000;
   double altered_key_y = 10000;
-
+  int checket_for_key = 0;
   if (map_x_y_float_.at<cv::Vec2f>((int)key_y, (int)key_x)[0] < 5000 ||
       map_x_y_float_.at<cv::Vec2f>((int)key_y, (int)key_x)[1] < 5000) {
     altered_key_x =
@@ -452,15 +452,17 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
   } else {
     altered_key_x = key_x;
     altered_key_y = key_y;
+    checket_for_key = 1;
   }
   float xf = briskPoint.x + altered_key_x;
   float yf = briskPoint.y + altered_key_y;
   if (altered_key_x < 32 || altered_key_y < 32 ||
       altered_key_x > map_x_y_float_.cols - 32 - 1 ||
       altered_key_y > map_x_y_float_.rows - 32 - 1) {
+    checket_for_key = 1;
     xf = briskPoint.x + key_x;
     yf = briskPoint.y + key_y;
-  };
+  }
   // std::cout << "  " << key_x << " " << key_y << std::endl;
   //  std::cout << "  " << altered_key_x << " " << altered_key_y << std::endl;
   // std::cout << " " << xf << " " << yf << std::endl;
@@ -493,10 +495,15 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
         << std::endl;
   }*/
   // std::cout << " pre LOCA" << std::endl;
-  double loc_x =
-      file_matrix_x_.at<float>(static_cast<int>(yf), static_cast<int>(xf));
-  double loc_y =
-      file_matrix_y_.at<float>(static_cast<int>(yf), static_cast<int>(xf));
+  double loc_x = xf;
+  double loc_y = yf;
+  if (checket_for_key == 0) {
+    loc_x =
+        file_matrix_x_.at<float>(static_cast<int>(yf), static_cast<int>(xf));
+    loc_y =
+        file_matrix_y_.at<float>(static_cast<int>(yf), static_cast<int>(xf));
+  }
+
   // std::cout << loc_x << " " << loc_y << std::endl;
   xf = loc_x;
   yf = loc_y;
