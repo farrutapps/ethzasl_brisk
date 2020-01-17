@@ -199,6 +199,7 @@ class BriskDescriptorExtractor {
 
   cv::Mat file_matrix_x_;
   cv::Mat file_matrix_y_;
+  cv::Mat map_x_y_float_;
   // General size.
   static const float basicSize_;
 };
