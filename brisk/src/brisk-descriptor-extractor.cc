@@ -412,6 +412,7 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
     double r2 = 4.1;
     double r3 = 6.2;
     double r4 = 9.1;
+    float sig1 = 0.6;
     float sig2 = 0.7617269;
     float sig3 = 0.9267997e-01;
     float sig4 = 1.307765;
@@ -427,13 +428,7 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
     altered_key_x = key_x;
     altered_key_y = key_y;
     checket_for_key = 1;
-    // std::cout << "tralalaa" << std::endl;
-    //
   }
-  if (key_x > 715 || key_y > 470) {
-    std::cout << key_x << " " << key_y << std::endl;
-  }
-
   float xf = briskPoint.x + altered_key_x;
   float yf = briskPoint.y + altered_key_y;
   /*if (altered_key_x < 32 || altered_key_y < 32 ||
