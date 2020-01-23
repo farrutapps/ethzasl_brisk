@@ -190,11 +190,11 @@ void BriskDescriptorExtractor::InitFromStream(bool rotationInvariant,
   // std::cout << " rotationInvariant :" << rotationInvariant << "
   // scaleInvariant "
   //          << scaleInvariant << std::endl;
-  cv::FileStorage opencv_file_x("/home/mathur/map1mh.ext",
+  cv::FileStorage opencv_file_x("/home/mathur/map1mhextended.ext",
                                 cv::FileStorage::READ); // map1mh
-  cv::FileStorage opencv_file_y("/home/mathur/map2mh.ext",
+  cv::FileStorage opencv_file_y("/home/mathur/map2mhextended.ext",
                                 cv::FileStorage::READ);
-  cv::FileStorage opencv_file_x_y("/home/mathur/mapping_x_y_raw_to_und_mh.ext",
+  cv::FileStorage opencv_file_x_y("/home/mathur/mapping_x_y_raw_to_undtry.ext",
                                   cv::FileStorage::READ);
   opencv_file_x["matName"] >> file_matrix_x_;
   opencv_file_y["matName"] >> file_matrix_y_;
@@ -402,125 +402,120 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
   // Get the float position.
   const brisk::BriskPatternPoint &briskPoint =
       patternPoints_[scale * n_rot_ * points_ + rot * points_ + point];
-  // std::cout << "WE ARE HERE - start of SmoothedInt" << std::endl;
-  // std::cout << "n_rot_ " << n_rot_ << " scale " << scale << " rot " << rot
-  //          << std::endl;
-  /*double close_fcn = 100;
-  double altered_key_x = 10000;
-  double altered_key_y = 10000;
-  // Finds location of keypoint in undistorted image.
-  // std::cout << key_x << " " << key_y << std::endl;
-  if (key_x <= (file_matrix_x_.cols + 1) / 2 &&
-      key_y <= (file_matrix_y_.rows + 1) / 2) {
-  }
-  for (int i = 0; i < file_matrix_x_.rows; i++) {
-    for (int j = 0; j < file_matrix_x_.cols; j++) {
-      if (close_fcn > (pow((file_matrix_y_.at<float>(i, j) - key_y), 2) +
-                       pow((file_matrix_x_.at<float>(i, j) - key_x), 2))) {
-        altered_key_y = i;
-        altered_key_x = j;
-        close_fcn = pow((file_matrix_y_.at<float>(i, j) - key_y), 2) +
-                    pow((file_matrix_x_.at<float>(i, j) - key_x), 2);
 
-        if (close_fcn < 1) {
-          break;
-        }
-      }
-    }
-    if (close_fcn < 1) {
-      break;
-    }
-  }
-  if (altered_key_x == 10000 || altered_key_y == 10000) {
-    // checks if all keypoints are found in undist image. If not, increase
-    // close_fcn!
-    std::cout << "one keypoint wasnt found!! in b-d-e.cc SmoothedIntensity"
-              << std::endl;
-  }
   // Newly created pattern point.
-  float xf = briskPoint.x + altered_key_x;
-  float yf = briskPoint.y + altered_key_y;*/
+
   double altered_key_x = 10000;
   double altered_key_y = 10000;
   int checket_for_key = 0;
-  if (map_x_y_float_.at<cv::Vec2f>((int)key_y, (int)key_x)[0] < 5000 ||
-      map_x_y_float_.at<cv::Vec2f>((int)key_y, (int)key_x)[1] < 5000) {
+  /*  double r1 = 2.46;
+    double r2 = 4.1;
+    double r3 = 6.2;
+    double r4 = 9.1;
+    float sig2 = 0.7617269;
+    float sig3 = 0.9267997e-01;
+    float sig4 = 1.307765;
+    float sig5 = 1.436068;*/
+  // Points in the map that are empty are filled with 10000!
+  if (map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[0] < 5000 ||
+      map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[1] < 5000) {
     altered_key_x =
-        (int)map_x_y_float_.at<cv::Vec2f>((int)key_y, (int)key_x)[1];
+        (int)map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[1];
     altered_key_y =
-        (int)map_x_y_float_.at<cv::Vec2f>((int)key_y, (int)key_x)[0];
+        (int)map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[0];
   } else {
     altered_key_x = key_x;
     altered_key_y = key_y;
     checket_for_key = 1;
+    // std::cout << "tralalaa" << std::endl;
+    //
   }
+  if (key_x > 715 || key_y > 470) {
+    std::cout << key_x << " " << key_y << std::endl;
+  }
+
   float xf = briskPoint.x + altered_key_x;
   float yf = briskPoint.y + altered_key_y;
-  if (altered_key_x < 32 || altered_key_y < 32 ||
+  /*if (altered_key_x < 32 || altered_key_y < 32 ||
       altered_key_x > map_x_y_float_.cols - 32 - 1 ||
       altered_key_y > map_x_y_float_.rows - 32 - 1) {
     checket_for_key = 1;
     xf = briskPoint.x + key_x;
     yf = briskPoint.y + key_y;
-  }
-  // std::cout << "  " << key_x << " " << key_y << std::endl;
-  //  std::cout << "  " << altered_key_x << " " << altered_key_y << std::endl;
-  // std::cout << " " << xf << " " << yf << std::endl;
-  // Finds pattern point possition in distorted image.
-  // This part is not needed bcs we can just take values from matrix!;
-  /*close_fcn = 1000;
-  double loc_x = 10000;
-  double loc_y = 10000;
-  for (int i = 0; i < file_matrix_x_.rows; i++) {
-
-    for (int j = 0; j < file_matrix_x_.cols; j++) {
-      if (close_fcn > (pow((i - yf), 2) + pow((j - xf), 2))) {
-        loc_y = file_matrix_y_.at<float>(i, j);
-        loc_x = file_matrix_x_.at<float>(i, j);
-        close_fcn = pow((i - yf), 2) + pow((j - xf), 2);
-        if (close_fcn < 0.7) {
-          break;
-        }
-      }
-    }
-    if (close_fcn < 0.7) {
-      break;
-    }
-  }
-  if (loc_x == 10000 || loc_y == 10000) {
-    // checks if all keypoints are found in undist image. If not, increase
-    // close_fcn!
-    std::cout
-        << "one pattern point was not found!! in b-d-e.cc SmoothedIntensity"
-        << std::endl;
   }*/
-  // std::cout << " pre LOCA" << std::endl;
-  double loc_x = xf;
-  double loc_y = yf;
   if (checket_for_key == 0) {
-    loc_x =
-        file_matrix_x_.at<float>(static_cast<int>(yf), static_cast<int>(xf));
-    loc_y =
-        file_matrix_y_.at<float>(static_cast<int>(yf), static_cast<int>(xf));
+    if (xf < 0 || yf < 0 || xf >= file_matrix_x_.cols ||
+        yf >= file_matrix_x_.rows) {
+      checket_for_key = 1;
+      xf = briskPoint.x + key_x;
+      yf = briskPoint.y + key_y;
+      altered_key_x = key_x;
+      altered_key_y = key_y;
+    }
+  } else { // no need for this but just to be sure
+    if (xf < 0 || yf < 0 || xf >= map_x_y_float_.cols ||
+        yf >= map_x_y_float_.rows) {
+      checket_for_key = 1;
+      xf = briskPoint.x + key_x;
+      yf = briskPoint.y + key_y;
+      altered_key_x = key_x;
+      altered_key_y = key_y;
+    }
+  }
+  double loc_x = 100000; // xf
+  double loc_y = 100000; // yf
+  if (checket_for_key == 0) {
+    loc_x = file_matrix_x_.at<float>(round(yf), round(xf));
+    loc_y = file_matrix_y_.at<float>(round(yf), round(xf));
+    if (loc_x < 0 || loc_y < 0 || loc_x >= map_x_y_float_.cols ||
+        loc_y >= map_x_y_float_.rows) {
+      loc_x = briskPoint.x + key_x;
+      loc_y = briskPoint.y + key_y;
+      altered_key_x = key_x;
+      altered_key_y = key_y;
+    }
+  } else {
+    loc_x = briskPoint.x + key_x;
+    loc_y = briskPoint.y + key_y;
   }
 
   // std::cout << loc_x << " " << loc_y << std::endl;
   xf = loc_x;
   yf = loc_y;
+
   const int x = static_cast<int>(loc_x);
   const int y = static_cast<int>(loc_y);
 
-  /*std::cout << " " << static_cast<int>(loc_x) << " "
-            << static_cast<int>(briskPoint.x + key_x) << std::endl;
-  std::cout << " " << static_cast<int>(loc_y) << " "
-            << static_cast<int>(briskPoint.y + key_y) << std::endl;*/
+  // Original part of the code!
   // const float xf = briskPoint.x + key_x;
   // const float yf = briskPoint.y + key_y;
   // const int x = static_cast<int>(xf);
   // const int y = static_cast<int>(yf);
   const int &imagecols = image.cols;
-  // Get the sigma:
+  // Get the sigma: sqrt(xf * xf + yf * yf)
   const float sigma_half = briskPoint.sigma;
+  /*if (sqrt((xf - altered_key_x) * (xf - altered_key_x) +
+           (yf - altered_key_y) * (yf - altered_key_y)) < r1) {
+    sigma_half = sig1;
+  } else if (sqrt((xf - altered_key_x) * (xf - altered_key_x) +
+                  (yf - altered_key_y) * (yf - altered_key_y)) >= r1 &&
+             sqrt((xf - altered_key_x) * (xf - altered_key_x) +
+                  (yf - altered_key_y) * (yf - altered_key_y)) < r2) {
+    sigma_half = sig2;
+  } else if (sqrt((xf - altered_key_x) * (xf - altered_key_x) +
+                  (yf - altered_key_y) * (yf - altered_key_y)) >= r2 &&
+             sqrt((xf - altered_key_x) * (xf - altered_key_x) +
+                  (yf - altered_key_y) * (yf - altered_key_y)) < r3) {
+    sigma_half = sig3;
+  } else if (sqrt((xf - altered_key_x) * (xf - altered_key_x) +
+                  (yf - altered_key_y) * (yf - altered_key_y)) >= r3 &&
+             sqrt((xf - altered_key_x) * (xf - altered_key_x) +
+                  (yf - altered_key_y) * (yf - altered_key_y)) < r4) {
+    sigma_half = sig4;
+  } else if (sqrt((xf - altered_key_x) * (xf - altered_key_x) +
+                  (yf - altered_key_y) * (yf - altered_key_y)) >= r4) {
+    sigma_half = sig5;
+  }*/
   const float area = 4.0 * sigma_half * sigma_half;
 
   // Calculate output:
@@ -544,7 +539,6 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
     ret_val += (r_x_1 * r_y * IntegralPixel_T(*ptr));
     return (ret_val) / 1024;
   }
-  // std::cout << " OVDE DODJOH" << std::endl;
   // This is the standard case (simple, not speed optimized yet):
   // Scaling:
   const IntegralPixel_T scaling = 4194304.0 / area;
