@@ -405,9 +405,9 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
 
   // Newly created pattern point.
 
-  double altered_key_x = 10000;
-  double altered_key_y = 10000;
-  int checket_for_key = 0;
+  int altered_key_x = 10000;
+  int altered_key_y = 10000;
+  // int checket_for_key = 0;
   /*  double r1 = 2.46;
     double r2 = 4.1;
     double r3 = 6.2;
@@ -418,7 +418,7 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
     float sig4 = 1.307765;
     float sig5 = 1.436068;*/
   // Points in the map that are empty are filled with 10000!
-  if (map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[0] < 5000 ||
+  /*if (map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[0] < 5000 ||
       map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[1] < 5000) {
     altered_key_x =
         (int)map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[1];
@@ -431,14 +431,14 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
   }
   float xf = briskPoint.x + altered_key_x;
   float yf = briskPoint.y + altered_key_y;
-  /*if (altered_key_x < 32 || altered_key_y < 32 ||
+  if (altered_key_x < 32 || altered_key_y < 32 ||
       altered_key_x > map_x_y_float_.cols - 32 - 1 ||
       altered_key_y > map_x_y_float_.rows - 32 - 1) {
     checket_for_key = 1;
     xf = briskPoint.x + key_x;
     yf = briskPoint.y + key_y;
   }*/
-  if (checket_for_key == 0) {
+  /*if (checket_for_key == 0) {
     if (xf < 0 || yf < 0 || xf >= file_matrix_x_.cols ||
         yf >= file_matrix_x_.rows) {
       checket_for_key = 1;
@@ -480,12 +480,38 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
 
   const int x = static_cast<int>(loc_x);
   const int y = static_cast<int>(loc_y);
-
+*/
   // Original part of the code!
   // const float xf = briskPoint.x + key_x;
   // const float yf = briskPoint.y + key_y;
   // const int x = static_cast<int>(xf);
   // const int y = static_cast<int>(yf);
+  altered_key_x =
+      (int)round(map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[1]);
+  altered_key_y =
+      (int)round(map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[0]);
+
+  double loc_x = 100000; // xf
+  double loc_y = 100000; // yf
+  // std::cout << " 0. " << key_x << " key x and y " << key_y << std::endl;
+  // std::cout << " 1. " << altered_key_x << " altered x and y " <<
+  // altered_key_y
+  //  << std::endl;
+  float xf = briskPoint.x + altered_key_x;
+  float yf = briskPoint.y + altered_key_y;
+  // std::cout << " 2. " << xf << " xf and yf " << yf << std::endl;
+  if (altered_key_x == 10000 || altered_key_y == 10000) {
+    loc_x = briskPoint.x + key_x;
+    loc_y = briskPoint.y + key_y;
+  } else {
+    loc_x = file_matrix_x_.at<float>(round(yf), round(xf));
+    loc_y = file_matrix_y_.at<float>(round(yf), round(xf));
+  }
+  xf = loc_x;
+  yf = loc_y;
+  //  std::cout << " 3. " << xf << " locx and locy " << yf << std::endl;
+  const int x = static_cast<int>(loc_x);
+  const int y = static_cast<int>(loc_y);
   const int &imagecols = image.cols;
   // Get the sigma: sqrt(xf * xf + yf * yf)
   const float sigma_half = briskPoint.sigma;
