@@ -186,16 +186,12 @@ void BriskDescriptorExtractor::InitFromStream(bool rotationInvariant,
                                               std::istream &pattern_stream,
                                               float patternScale) {
   // Not in use.
-  // to read matrix!!
-  // std::cout << " rotationInvariant :" << rotationInvariant << "
-  // scaleInvariant "
-  //          << scaleInvariant << std::endl;
   cv::FileStorage opencv_file_x("/home/mathur/map1mhextended.ext",
                                 cv::FileStorage::READ); // map1mh
   cv::FileStorage opencv_file_y("/home/mathur/map2mhextended.ext",
                                 cv::FileStorage::READ);
-  cv::FileStorage opencv_file_x_y("/home/mathur/mapping_x_y_raw_to_undtry.ext",
-                                  cv::FileStorage::READ);
+  cv::FileStorage opencv_file_x_y(
+      "/home/mathur/mapping_x_y_raw_to_undtrytry.ext", cv::FileStorage::READ);
   opencv_file_x["matName"] >> file_matrix_x_;
   opencv_file_y["matName"] >> file_matrix_y_;
   opencv_file_x_y["matName"] >> map_x_y_float_;
@@ -204,7 +200,7 @@ void BriskDescriptorExtractor::InitFromStream(bool rotationInvariant,
   opencv_file_x_y.release();
   // this is being written in command line when i go maplab_node maplab_node
   // rovioli.launch
-  // std::cout << "smth" << std::endl;
+
   dMax_ = 0;
   dMin_ = 0;
   rotationInvariance = rotationInvariant;
@@ -405,20 +401,10 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
 
   // Newly created pattern point.
 
-  int altered_key_x = 10000;
-  int altered_key_y = 10000;
   // int checket_for_key = 0;
-  /*  double r1 = 2.46;
-    double r2 = 4.1;
-    double r3 = 6.2;
-    double r4 = 9.1;
-    float sig1 = 0.6;
-    float sig2 = 0.7617269;
-    float sig3 = 0.9267997e-01;
-    float sig4 = 1.307765;
-    float sig5 = 1.436068;*/
+  /*
   // Points in the map that are empty are filled with 10000!
-  /*if (map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[0] < 5000 ||
+  if (map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[0] < 5000 ||
       map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[1] < 5000) {
     altered_key_x =
         (int)map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[1];
@@ -486,13 +472,23 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
   // const float yf = briskPoint.y + key_y;
   // const int x = static_cast<int>(xf);
   // const int y = static_cast<int>(yf);
-  altered_key_x =
-      (int)round(map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[1]);
-  altered_key_y =
-      (int)round(map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[0]);
+  // std::cout << key_x << " key " << key_y << std::endl;
+  // Value -100 is sign of unused pixel location.
+  int altered_key_x = -100;
+  int altered_key_y = -100;
+  if (round(key_y) < 0 || round(key_x) < 0 ||
+      round(key_y) > map_x_y_float_.rows - 1 ||
+      round(key_x) > map_x_y_float_.cols - 1) {
 
-  double loc_x = 100000; // xf
-  double loc_y = 100000; // yf
+  } else {
+    altered_key_x =
+        (int)round(map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[1]);
+    altered_key_y =
+        (int)round(map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[0]);
+  }
+  // Value -100 represents represents unbiguous location.
+  double loc_x = -100; // xf
+  double loc_y = -100; // yf
   // std::cout << " 0. " << key_x << " key x and y " << key_y << std::endl;
   // std::cout << " 1. " << altered_key_x << " altered x and y " <<
   // altered_key_y
@@ -500,43 +496,30 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
   float xf = briskPoint.x + altered_key_x;
   float yf = briskPoint.y + altered_key_y;
   // std::cout << " 2. " << xf << " xf and yf " << yf << std::endl;
-  if (altered_key_x == 10000 || altered_key_y == 10000) {
+  // std::cout << altered_key_x << "altered key " << altered_key_y << std::endl;
+  if (altered_key_x == -100 || altered_key_y == -100 || xf < 0 || yf < 0 ||
+      xf > file_matrix_x_.cols - 1 || yf > file_matrix_x_.rows - 1) {
     loc_x = briskPoint.x + key_x;
     loc_y = briskPoint.y + key_y;
+    //  std::cout << " 1." << std::endl;
   } else {
-    loc_x = file_matrix_x_.at<float>(round(yf), round(xf));
-    loc_y = file_matrix_y_.at<float>(round(yf), round(xf));
+
+    loc_x = file_matrix_x_.at<float>(int(yf), int(xf));
+    loc_y = file_matrix_y_.at<float>(int(yf), int(xf));
+    if (loc_x < 0 || loc_y < 0 || loc_x > map_x_y_float_.cols - 1 ||
+        yf > map_x_y_float_.rows - 1) {
+      loc_x = briskPoint.x + key_x;
+      loc_y = briskPoint.y + key_y;
+    }
   }
+
   xf = loc_x;
   yf = loc_y;
-  //  std::cout << " 3. " << xf << " locx and locy " << yf << std::endl;
-  const int x = static_cast<int>(loc_x);
-  const int y = static_cast<int>(loc_y);
+  // std::cout << xf << "loc_x loc_Y " << yf << std::endl << std::endl;
+  const int x = static_cast<int>(xf);
+  const int y = static_cast<int>(yf);
   const int &imagecols = image.cols;
-  // Get the sigma: sqrt(xf * xf + yf * yf)
   const float sigma_half = briskPoint.sigma;
-  /*if (sqrt((xf - altered_key_x) * (xf - altered_key_x) +
-           (yf - altered_key_y) * (yf - altered_key_y)) < r1) {
-    sigma_half = sig1;
-  } else if (sqrt((xf - altered_key_x) * (xf - altered_key_x) +
-                  (yf - altered_key_y) * (yf - altered_key_y)) >= r1 &&
-             sqrt((xf - altered_key_x) * (xf - altered_key_x) +
-                  (yf - altered_key_y) * (yf - altered_key_y)) < r2) {
-    sigma_half = sig2;
-  } else if (sqrt((xf - altered_key_x) * (xf - altered_key_x) +
-                  (yf - altered_key_y) * (yf - altered_key_y)) >= r2 &&
-             sqrt((xf - altered_key_x) * (xf - altered_key_x) +
-                  (yf - altered_key_y) * (yf - altered_key_y)) < r3) {
-    sigma_half = sig3;
-  } else if (sqrt((xf - altered_key_x) * (xf - altered_key_x) +
-                  (yf - altered_key_y) * (yf - altered_key_y)) >= r3 &&
-             sqrt((xf - altered_key_x) * (xf - altered_key_x) +
-                  (yf - altered_key_y) * (yf - altered_key_y)) < r4) {
-    sigma_half = sig4;
-  } else if (sqrt((xf - altered_key_x) * (xf - altered_key_x) +
-                  (yf - altered_key_y) * (yf - altered_key_y)) >= r4) {
-    sigma_half = sig5;
-  }*/
   const float area = 4.0 * sigma_half * sigma_half;
 
   // Calculate output:
@@ -684,7 +667,7 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
   ret_val += C * IntegralPixel_T(*ptr);
 
   return IntegralPixel_T((ret_val) / scaling2);
-}
+} // namespace brisk
 
 bool RoiPredicate(const float minX, const float minY, const float maxX,
                   const float maxY, const agast::KeyPoint &keyPt) {
