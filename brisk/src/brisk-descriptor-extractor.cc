@@ -191,7 +191,8 @@ void BriskDescriptorExtractor::InitFromStream(bool rotationInvariant,
   cv::FileStorage opencv_file_y("/home/mathur/map2mhextended.ext",
                                 cv::FileStorage::READ);
   cv::FileStorage opencv_file_x_y(
-      "/home/mathur/mapping_x_y_raw_to_undtrytry.ext", cv::FileStorage::READ);
+      "/home/mathur/mapping_x_y_raw_to_und_mhextended.ext",
+      cv::FileStorage::READ);
   opencv_file_x["matName"] >> file_matrix_x_;
   opencv_file_y["matName"] >> file_matrix_y_;
   opencv_file_x_y["matName"] >> map_x_y_float_;
@@ -507,7 +508,7 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
     loc_x = file_matrix_x_.at<float>(int(yf), int(xf));
     loc_y = file_matrix_y_.at<float>(int(yf), int(xf));
     if (loc_x < 0 || loc_y < 0 || loc_x > map_x_y_float_.cols - 1 ||
-        yf > map_x_y_float_.rows - 1) {
+        loc_y > map_x_y_float_.rows - 1) {
       loc_x = briskPoint.x + key_x;
       loc_y = briskPoint.y + key_y;
     }
