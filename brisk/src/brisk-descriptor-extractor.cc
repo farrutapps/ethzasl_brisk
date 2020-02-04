@@ -186,12 +186,12 @@ void BriskDescriptorExtractor::InitFromStream(bool rotationInvariant,
                                               std::istream &pattern_stream,
                                               float patternScale) {
   // Not in use.
-  cv::FileStorage opencv_file_x("/home/mathur/map1mhextended.ext",
+  cv::FileStorage opencv_file_x("/home/mathur/map1q.ext",
                                 cv::FileStorage::READ); // map1mh
-  cv::FileStorage opencv_file_y("/home/mathur/map2mhextended.ext",
+  cv::FileStorage opencv_file_y("/home/mathur/map2q.ext",
                                 cv::FileStorage::READ);
   cv::FileStorage opencv_file_x_y(
-      "/home/mathur/mapping_x_y_raw_to_und_mhextended.ext",
+      "/home/mathur/mapping_x_y_raw_to_und_qextended.ext",
       cv::FileStorage::READ);
   opencv_file_x["matName"] >> file_matrix_x_;
   opencv_file_y["matName"] >> file_matrix_y_;
@@ -480,7 +480,7 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
   if (round(key_y) < 0 || round(key_x) < 0 ||
       round(key_y) > map_x_y_float_.rows - 1 ||
       round(key_x) > map_x_y_float_.cols - 1) {
-    std::cout << "original point 1" << std::cout;
+    std::cout << "original point 1" << std::endl;
   } else {
     altered_key_x =
         (int)round(map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[1]);
@@ -502,7 +502,7 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
       xf > file_matrix_x_.cols - 1 || yf > file_matrix_x_.rows - 1) {
     loc_x = briskPoint.x + key_x;
     loc_y = briskPoint.y + key_y;
-    std::cout << "original point 2" << std::cout;
+    std::cout << "original point 2" << std::endl;
   } else {
 
     loc_x = file_matrix_x_.at<float>(int(yf), int(xf));
@@ -511,7 +511,7 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
         loc_y > map_x_y_float_.rows - 1) {
       loc_x = briskPoint.x + key_x;
       loc_y = briskPoint.y + key_y;
-      std::cout << "original point 3" << std::cout;
+      std::cout << "original point 3" << std::endl;
     }
   }
 
