@@ -480,7 +480,7 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
   if (round(key_y) < 0 || round(key_x) < 0 ||
       round(key_y) > map_x_y_float_.rows - 1 ||
       round(key_x) > map_x_y_float_.cols - 1) {
-
+    std::cout << "original point 1" << std::cout;
   } else {
     altered_key_x =
         (int)round(map_x_y_float_.at<cv::Vec2f>(round(key_y), round(key_x))[1]);
@@ -502,7 +502,7 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
       xf > file_matrix_x_.cols - 1 || yf > file_matrix_x_.rows - 1) {
     loc_x = briskPoint.x + key_x;
     loc_y = briskPoint.y + key_y;
-    //  std::cout << " 1." << std::endl;
+    std::cout << "original point 2" << std::cout;
   } else {
 
     loc_x = file_matrix_x_.at<float>(int(yf), int(xf));
@@ -511,6 +511,7 @@ __inline__ IntegralPixel_T BriskDescriptorExtractor::SmoothedIntensity(
         loc_y > map_x_y_float_.rows - 1) {
       loc_x = briskPoint.x + key_x;
       loc_y = briskPoint.y + key_y;
+      std::cout << "original point 3" << std::cout;
     }
   }
 
