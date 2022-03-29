@@ -43,7 +43,6 @@ endif()
 
 # Testing.
 ##########
-enable_testing()
 file(COPY src/test/test_data DESTINATION ${PROJECT_BINARY_DIR})
 
 cs_add_library(${PROJECT_NAME}_test_lib src/test/serialization.cc
